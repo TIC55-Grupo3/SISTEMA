@@ -4,7 +4,7 @@ from typing import List
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "SISTEMA"
-    VERSION: str = "0.1.0"
+    VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
     DATABASE_URL: str = "postgresql://postgres:postgres@db:5432/sistema_db"
