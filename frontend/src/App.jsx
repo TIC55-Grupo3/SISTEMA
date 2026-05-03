@@ -1,25 +1,24 @@
-import { useState, useEffect } from 'react'
-import api from './services/api'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import Login from './pages/Login'
+import RecuperarSenha from './pages/RecuperarSenha'
+import RecuperarSenhaSucesso from './pages/RecuperarSenhaSucesso'
+import RedefinirSenha from './pages/RedefinirSenha'
 
 function App() {
-  const [status, setStatus] = useState(null)
-
-  useEffect(() => {
-    api.get('/health')
-      .then(res => setStatus(res.data.status))
-      .catch(() => setStatus('offline'))
-  }, [])
-
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>SISTEMA</h1>
-      <p>
-        Backend:{' '}
-        <span style={{ color: status === 'ok' ? 'green' : 'red' }}>
-          {status ?? 'verificando...'}
-        </span>
-      </p>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+          <Route path="/recuperar-senha/sucesso" element={<RecuperarSenhaSucesso />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+          <Route path="/painel" element={<div>Painel (em breve)</div>} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
