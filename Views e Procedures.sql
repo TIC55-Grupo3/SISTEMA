@@ -3,7 +3,23 @@
 -- ==========================================================
 
 ------------------------------------------------------------
--- MÓDULO 3: OPERACIONAL E CRM (VISUALIZAÇÃO)
+-- MÓDULO 1: GOVERNANÇA E ADMINISTRAÇÃO
+------------------------------------------------------------
+
+-- View: Histórico e Rastreabilidade do Sistema
+CREATE OR REPLACE VIEW vw_historico_auditoria AS
+SELECT 
+    l.id_log AS "ID Log",
+    l.data_hora AS "Data e Hora",
+    u.nome AS "Usuário",
+    l.nome_tabela AS "Tabela",
+    l.acao AS "Ação Realizada"
+FROM log_auditoria l
+LEFT JOIN usuarios u ON l.id_usuario = u.id_usuario
+ORDER BY l.data_hora DESC;
+
+------------------------------------------------------------
+-- MÓDULO 3: OPERACIONAL E CRM
 ------------------------------------------------------------
 
 -- View: Painel de Controle de OS (O que o técnico vê)
@@ -44,7 +60,7 @@ END;
 $$;
 
 ------------------------------------------------------------
--- MÓDULO 4: ESTOQUE (ALERTAS)
+-- MÓDULO 4: ESTOQUE
 ------------------------------------------------------------
 
 -- View: Radar de Reposição (Estoque Crítico)
@@ -58,7 +74,7 @@ FROM produtos_pecas
 WHERE saldo_atual <= estoque_minimo;
 
 ------------------------------------------------------------
--- MÓDULO 5: COMERCIAL E FINANCEIRO (PROCESSAMENTO)
+-- MÓDULO 5: COMERCIAL E FINANCEIRO
 ------------------------------------------------------------
 
 -- View: Fechamento de Caixa Diário

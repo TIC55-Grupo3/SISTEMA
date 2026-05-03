@@ -1,6 +1,62 @@
 -- ==========================================================
 -- Functions e Triggers
 -- ==========================================================
+------------------------------------------------------------
+-- MÓDULO 1: GOVERNANÇA E ADMINISTRAÇÃO
+------------------------------------------------------------
+
+-- Função genérica de Auditoria para registrar Criação, Atualização e Exclusão em texto
+CREATE OR REPLACE FUNCTION fn_registrar_auditoria()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_old_data TEXT := NULL;
+    v_new_data TEXT := NULL;
+    v_id_usuario INT := NULL;
+BEGIN
+    -- Captura o usuário atual se a aplicação estiver setando a variável de sessão
+    BEGIN
+        v_id_usuario := current_setting('app.current_user_id', true)::INT;
+    EXCEPTION WHEN OTHERS THEN
+        v_id_usuario := NULL;
+    END;
+
+    -- O PostgreSQL sempre lê a operação em inglês no TG_OP, mas salvamos em português
+    IF (TG_OP = 'DELETE') THEN
+        v_old_data := OLD::TEXT;
+        INSERT INTO log_auditoria (nome_tabela, acao, dados_antigos, id_usuario)
+        VALUES (TG_TABLE_NAME, 'Exclusão', v_old_data, v_id_usuario);
+        RETURN OLD;
+        
+    ELSIF (TG_OP = 'UPDATE') THEN
+        v_old_data := OLD::TEXT;
+        v_new_data := NEW::TEXT;
+        INSERT INTO log_auditoria (nome_tabela, acao, dados_antigos, dados_novos, id_usuario)
+        VALUES (TG_TABLE_NAME, 'Atualização', v_old_data, v_new_data, v_id_usuario);
+        RETURN NEW;
+        
+    ELSIF (TG_OP = 'INSERT') THEN
+        v_new_data := NEW::TEXT;
+        INSERT INTO log_auditoria (nome_tabela, acao, dados_novos, id_usuario)
+        VALUES (TG_TABLE_NAME, 'Criação', v_new_data, v_id_usuario);
+        RETURN NEW;
+    END IF;
+    
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers de Auditoria
+CREATE TRIGGER trg_auditar_ordens_servico
+AFTER INSERT OR UPDATE OR DELETE ON ordens_servico
+FOR EACH ROW EXECUTE FUNCTION fn_registrar_auditoria();
+
+CREATE TRIGGER trg_auditar_produtos
+AFTER INSERT OR UPDATE OR DELETE ON produtos_pecas
+FOR EACH ROW EXECUTE FUNCTION fn_registrar_auditoria();
+
+CREATE TRIGGER trg_auditar_transacoes
+AFTER INSERT OR UPDATE OR DELETE ON transacoes_financeiras
+FOR EACH ROW EXECUTE FUNCTION fn_registrar_auditoria();
 
 ------------------------------------------------------------
 -- MÓDULO 3: OPERACIONAL

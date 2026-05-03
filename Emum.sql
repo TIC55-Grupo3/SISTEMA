@@ -15,6 +15,9 @@ CREATE TYPE enum_prioridade_lembrete AS ENUM ('Alta', 'Média', 'Baixa');
 DROP TYPE IF EXISTS enum_status_lembrete CASCADE;
 CREATE TYPE enum_status_lembrete AS ENUM ('Pendente', 'Concluído', 'Cancelado');
 
+DROP TYPE IF EXISTS enum_tipo_acao_auditoria CASCADE;
+CREATE TYPE enum_tipo_acao_auditoria AS ENUM ('Criação', 'Atualização', 'Exclusão');
+
 -- 2. Estoque e Suprimentos
 DROP TYPE IF EXISTS enum_condicao_produto CASCADE;
 CREATE TYPE enum_condicao_produto AS ENUM ('Nova', 'Reuso');
@@ -43,3 +46,4 @@ CREATE TYPE enum_status_venda AS ENUM ('Pendente', 'Concluída', 'Cancelada');
 
 DROP TYPE IF EXISTS enum_tipo_transacao CASCADE;
 CREATE TYPE enum_tipo_transacao AS ENUM ('Entrada', 'Saída');
+
