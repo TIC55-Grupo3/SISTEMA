@@ -20,7 +20,7 @@ BEGIN
         v_id_usuario := NULL;
     END;
 
-    -- O PostgreSQL sempre lê a operação em inglês no TG_OP, mas salvamos em português
+    
     IF (TG_OP = 'DELETE') THEN
         v_old_data := OLD::TEXT;
         INSERT INTO log_auditoria (nome_tabela, acao, dados_antigos, id_usuario)
@@ -62,17 +62,25 @@ FOR EACH ROW EXECUTE FUNCTION fn_registrar_auditoria();
 -- MÓDULO 3: OPERACIONAL
 ------------------------------------------------------------
 
--- Função para atualizar o valor_total da Ordem de Serviço
+-- Função para atualizar o valor_total da OS (agora com desconto e checagem de aprovação)
 CREATE OR REPLACE FUNCTION fn_atualizar_total_os()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_desconto DECIMAL(10,2);
 BEGIN
+    SELECT COALESCE(valor_desconto, 0) INTO v_desconto
+    FROM ordens_servico
+    WHERE id_os = COALESCE(NEW.id_os, OLD.id_os);
+
     UPDATE ordens_servico
-    SET valor_total = (
+    SET valor_total = GREATEST(0, (
         SELECT COALESCE(SUM(subtotal), 0)
         FROM os_itens
-        WHERE id_os = COALESCE(NEW.id_os, OLD.id_os)
-    )
+        WHERE id_os = COALESCE(NEW.id_os, OLD.id_os) 
+        AND aprovado = TRUE
+    ) - v_desconto)
     WHERE id_os = COALESCE(NEW.id_os, OLD.id_os);
+    
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -87,14 +95,12 @@ FOR EACH ROW EXECUTE FUNCTION fn_atualizar_total_os();
 -- MÓDULO 4: ESTOQUE (SUPRIMENTOS)
 ------------------------------------------------------------
 
--- Função para validar se há estoque disponível
 CREATE OR REPLACE FUNCTION fn_item_tem_estoque()
 RETURNS TRIGGER AS $$
 DECLARE
     v_saldo_atual INT;
 BEGIN
-    -- Só valida se for um produto (id_produto não nulo)
-    IF NEW.id_produto IS NOT NULL THEN
+    IF NEW.id_produto IS NOT NULL AND NEW.aprovado = TRUE THEN
         SELECT saldo_atual INTO v_saldo_atual 
         FROM produtos_pecas 
         WHERE id_produto = NEW.id_produto;
