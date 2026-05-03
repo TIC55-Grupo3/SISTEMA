@@ -1,25 +1,24 @@
-import { useState, useEffect } from 'react'
-import api from './services/api'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import RotaPrivada from './components/RotaPrivada'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import Usuarios from './pages/Usuarios'
+import Relatorios from './pages/Relatorios'
 
 function App() {
-  const [status, setStatus] = useState(null)
-
-  useEffect(() => {
-    api.get('/health')
-      .then(res => setStatus(res.data.status))
-      .catch(() => setStatus('offline'))
-  }, [])
-
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>SISTEMA</h1>
-      <p>
-        Backend:{' '}
-        <span style={{ color: status === 'ok' ? 'green' : 'red' }}>
-          {status ?? 'verificando...'}
-        </span>
-      </p>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<RotaPrivada><Dashboard /></RotaPrivada>} />
+          <Route path="/usuarios" element={<RotaPrivada><Usuarios /></RotaPrivada>} />
+          <Route path="/relatorios" element={<RotaPrivada><Relatorios /></RotaPrivada>} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
