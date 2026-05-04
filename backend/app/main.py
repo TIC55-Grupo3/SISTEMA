@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from app.api.routes.auth import router as auth_router
+from app.models.token_blacklist import TokenBlacklist
 
 from app.core.config import settings
 from app.db.database import engine, Base
@@ -18,6 +20,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
 )
+app.include_router(auth_router, prefix=settings.API_V1_STR)
 
 app.add_middleware(
     CORSMiddleware,
