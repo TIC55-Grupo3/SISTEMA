@@ -38,6 +38,7 @@ export default function RedefinirSenha() {
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [mostrarConfirma, setMostrarConfirma] = useState(false)
   const [carregando, setCarregando] = useState(false)
+  const [erroToken, setErroToken] = useState('')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
@@ -55,11 +56,12 @@ export default function RedefinirSenha() {
   async function handleSalvar() {
     if (!tudo) return
     setCarregando(true)
+    setErroToken('')
     try {
       await api.post('/auth/redefinir-senha', { token, senha })
       navigate('/', { state: { sucesso: 'Senha alterada com sucesso!' } })
     } catch {
-      alert('Link inválido ou expirado. Solicite um novo.')
+      setErroToken('Link inválido ou expirado. Solicite um novo link.')
     } finally {
       setCarregando(false)
     }
@@ -79,6 +81,7 @@ export default function RedefinirSenha() {
             placeholder="••••••••"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSalvar()}
           />
           <Olhinho visivel={mostrarSenha} onClick={() => setMostrarSenha(!mostrarSenha)} />
         </div>
@@ -91,7 +94,7 @@ export default function RedefinirSenha() {
             placeholder="••••••••"
             value={confirma}
             onChange={(e) => setConfirma(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSalvar()}
           />
           <Olhinho visivel={mostrarConfirma} onClick={() => setMostrarConfirma(!mostrarConfirma)} />
         </div>
@@ -108,6 +111,8 @@ export default function RedefinirSenha() {
           <div style={s.regraItem}><Check ok={regras.especial} /> 1 caractere especial</div>
           <div style={s.regraItem}><Check ok={regras.iguais} /> Senhas iguais</div>
         </div>
+
+        {erroToken && <p style={s.erro}>{erroToken}</p>}
 
         <button
           style={{ ...s.botao, opacity: tudo ? 1 : 0.4, cursor: tudo ? 'pointer' : 'not-allowed' }}
@@ -135,6 +140,7 @@ const s = {
   senhaWrapper: { position: 'relative', width: '100%' },
   olhinho: { position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' },
   erroSenha: { color: '#dc2626', fontSize: '13px', marginBottom: '12px', marginTop: '-8px' },
+  erro: { color: '#dc2626', fontSize: '14px', marginBottom: '12px', backgroundColor: '#fee2e2', padding: '8px 12px', borderRadius: '8px' },
   regrasBox: { backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', marginBottom: '20px' },
   regrasTitle: { fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: '10px' },
   regraItem: { display: 'flex', alignItems: 'center', fontSize: '13px', color: '#64748b', marginBottom: '6px' },
