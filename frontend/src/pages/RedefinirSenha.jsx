@@ -70,7 +70,7 @@ export default function RedefinirSenha() {
   return (
     <div style={s.fundo}>
       <div style={s.card}>
-        <h1 style={s.logo}>Sistema</h1>
+        <h1 style={s.logo}>SIGIT</h1>
         <h2 style={s.titulo}>Criar nova senha</h2>
 
         <label style={s.label}>Senha</label>

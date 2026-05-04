@@ -17,6 +17,7 @@ export default function RecuperarSenhaSucesso() {
   return (
     <div style={s.fundo}>
       <div style={s.card}>
+        <h1 style={s.logo}>SIGIT</h1>
         <div style={s.iconeWrapper}>
           <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -41,6 +42,7 @@ const s = {
   fundo: { minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
   card: { backgroundColor: '#ffffff', borderRadius: '10px', padding: '40px', width: '100%', maxWidth: '420px', boxShadow: '0 2px 16px rgba(0,0,0,0.07)', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   iconeWrapper: { marginBottom: '20px' },
+  logo: { fontSize: '20px', fontWeight: 800, color: '#0f172a', textAlign: 'center', marginBottom: '8px' },
   titulo: { fontSize: '22px', fontWeight: 700, color: '#1e293b', textAlign: 'center', marginBottom: '16px' },
   texto: { fontSize: '14px', color: '#64748b', textAlign: 'center', lineHeight: '1.7', marginBottom: '28px' },
   botao: { width: '100%', padding: '14px', backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 600, fontSize: '16px', border: 'none', borderRadius: '10px', cursor: 'pointer' },

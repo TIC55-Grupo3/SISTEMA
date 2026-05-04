@@ -24,7 +24,7 @@ export default function RecuperarSenha() {
   return (
     <div style={s.fundo}>
       <div style={s.card}>
-        <h1 style={s.logo}>Sistema</h1>
+        <h1 style={s.logo}>SIGIT</h1>
         <h2 style={s.titulo}>Recuperar senha</h2>
         <p style={s.subtitulo}>
           Digite o e-mail cadastrado na sua conta. Enviaremos um link seguro para você criar uma nova senha.
