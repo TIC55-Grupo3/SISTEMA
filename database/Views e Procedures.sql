@@ -89,25 +89,45 @@ FROM transacoes_financeiras
 WHERE CAST(data_pagamento AS DATE) = CURRENT_DATE
 ORDER BY data_pagamento DESC;
 
--- PROCEDURE AVANÇADA: Registrar Venda de Balcão com Múltiplos Itens (via JSON)
+-- View: Histórico de Vendas com Pagamentos Múltiplos
+CREATE OR REPLACE VIEW vw_historico_vendas AS
+SELECT 
+    v.id_venda AS "Nº Venda",
+    COALESCE(c.nome, 'Cliente Avulso') AS "Cliente",
+    v.data_venda AS "Data",
+    v.valor_subtotal AS "Subtotal",
+    v.valor_desconto AS "Desconto",
+    v.valor_total_liquido AS "Total Líquido",
+    STRING_AGG(tf.forma_pagamento || ' (R$ ' || tf.valor || ')', ', ') AS "Formas de Pagamento",
+    v.status AS "Status"
+FROM vendas v
+LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+LEFT JOIN transacoes_financeiras tf ON v.id_venda = tf.id_venda
+GROUP BY v.id_venda, c.nome, v.data_venda, v.valor_subtotal, v.valor_desconto, v.valor_total_liquido, v.status
+ORDER BY v.data_venda DESC;
+
+-- PROCEDURE AVANÇADA: Registrar Venda de Balcão com Múltiplos Itens e Múltiplos Pagamentos
 CREATE OR REPLACE PROCEDURE pr_registrar_venda_completa(
     p_id_cliente INT,
-    p_valor_total DECIMAL(10,2),
-    p_forma_pagamento VARCHAR(50),
-    p_itens_json JSONB 
+    p_valor_subtotal DECIMAL(10,2),
+    p_valor_desconto DECIMAL(10,2),
+    p_valor_total_liquido DECIMAL(10,2),
+    p_itens_json JSONB, 
+    p_pagamentos_json JSONB
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     v_id_venda INT;
     v_item RECORD;
+    v_pagamento RECORD;
 BEGIN
-    -- 1. Cria o cabeçalho da venda
-    INSERT INTO vendas (id_cliente, valor_total, forma_pagamento, status)
-    VALUES (p_id_cliente, p_valor_total, p_forma_pagamento, 'Concluída')
+    -- 1. Cria o cabeçalho da venda (Atualizado com subtotal e desconto)
+    INSERT INTO vendas (id_cliente, valor_subtotal, valor_desconto, valor_total_liquido, status)
+    VALUES (p_id_cliente, p_valor_subtotal, p_valor_desconto, p_valor_total_liquido, 'Concluída')
     RETURNING id_venda INTO v_id_venda;
 
-    -- 2. Processa os itens do JSON
+    -- 2. Processa os itens do JSON (Carrinho de compras)
     FOR v_item IN SELECT * FROM jsonb_to_recordset(p_itens_json) 
         AS x(id_produto INT, qtd INT, preco DECIMAL(10,2))
     LOOP
@@ -120,9 +140,14 @@ BEGIN
         VALUES (v_item.id_produto, 'Saída', v_item.qtd, 'Venda Balcão #' || v_id_venda, 1);
     END LOOP;
 
-    -- 3. Registra no financeiro
-    INSERT INTO transacoes_financeiras (tipo, origem, valor, forma_pagamento, id_venda)
-    VALUES ('Entrada', 'Venda Balcão #' || v_id_venda, p_valor_total, p_forma_pagamento, v_id_venda);
+    -- 3. Processa as múltiplas formas de pagamento do JSON
+    FOR v_pagamento IN SELECT * FROM jsonb_to_recordset(p_pagamentos_json)
+        AS x(forma VARCHAR, valor DECIMAL(10,2))
+    LOOP
+        -- Registra cada fração do pagamento no financeiro
+        INSERT INTO transacoes_financeiras (tipo, origem, valor, forma_pagamento, id_venda)
+        VALUES ('Entrada', 'Venda Balcão #' || v_id_venda, v_pagamento.valor, v_pagamento.forma, v_id_venda);
+    END LOOP;
 
     COMMIT;
 EXCEPTION WHEN OTHERS THEN
