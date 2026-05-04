@@ -28,7 +28,7 @@ SELECT
     os.id_os AS "Nº OS",
     c.nome AS "Cliente",
     e.tipo_aparelho || ' ' || e.marca || ' (' || e.modelo || ')' AS "Equipamento",
-    os.status AS "Status",
+    os.status_os AS "Status",
     os.valor_total AS "Total",
     os.valor_pago AS "Adiantamento",
     (os.valor_total - os.valor_pago) AS "Saldo a Pagar",

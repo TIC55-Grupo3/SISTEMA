@@ -55,7 +55,7 @@ VALUES
 
 -- 8. ORDENS DE SERVIÇO (Cabeçalho)
 -- Inserindo uma OS para o notebook do Carlos
-INSERT INTO ordens_servico (id_equipamento, problema_relatado, estado_carcaca, laudo_tecnico, status, data_validade_orcamento) 
+INSERT INTO ordens_servico (id_equipamento, problema_relatado, estado_carcaca, laudo_tecnico, status_os, data_validade_orcamento) 
 VALUES 
     (1, 'Computador muito lento para iniciar e travando.', 'Arranhões leves na base', 'Foi identificado lentidão devido a HD mecânico antigo. Recomendada troca por SSD e formatação.', 'Em Andamento', CURRENT_DATE + INTERVAL '5 days');
 
