@@ -8,3 +8,4 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     nome_usuario: str
+    perfil: str

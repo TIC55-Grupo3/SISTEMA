@@ -1,13 +1,12 @@
 from pydantic_settings import BaseSettings
 from typing import List
 
-
 class Settings(BaseSettings):
     PROJECT_NAME: str = "SISTEMA"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
-    DATABASE_URL: str = "postgresql://postgres:postgres@db:5432/sistema_db"
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/assistencia_db"
 
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
@@ -18,6 +17,5 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
-
 
 settings = Settings()

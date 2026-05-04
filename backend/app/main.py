@@ -1,11 +1,9 @@
 from fastapi import FastAPI
-from app.api.routes import auth, usuarios
+from app.api.routes import auth
 
 app = FastAPI(title="Assistência Técnica API", version="1.0.0")
 
-# Registrar rotas
 app.include_router(auth.router)
-app.include_router(usuarios.router)
 
 @app.get("/")
 async def root():
