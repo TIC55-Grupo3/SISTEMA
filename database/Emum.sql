@@ -46,4 +46,3 @@ CREATE TYPE enum_status_venda AS ENUM ('Pendente', 'Concluída', 'Cancelada');
 
 DROP TYPE IF EXISTS enum_tipo_transacao CASCADE;
 CREATE TYPE enum_tipo_transacao AS ENUM ('Entrada', 'Saída');
-

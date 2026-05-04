@@ -5,7 +5,6 @@
 -- MÓDULO 1: GOVERNANÇA E ADMINISTRAÇÃO
 ------------------------------------------------------------
 
--- Função genérica de Auditoria para registrar Criação, Atualização e Exclusão em texto
 CREATE OR REPLACE FUNCTION fn_registrar_auditoria()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -13,14 +12,12 @@ DECLARE
     v_new_data TEXT := NULL;
     v_id_usuario INT := NULL;
 BEGIN
-    -- Captura o usuário atual se a aplicação estiver setando a variável de sessão
     BEGIN
         v_id_usuario := current_setting('app.current_user_id', true)::INT;
     EXCEPTION WHEN OTHERS THEN
         v_id_usuario := NULL;
     END;
 
-    
     IF (TG_OP = 'DELETE') THEN
         v_old_data := OLD::TEXT;
         INSERT INTO log_auditoria (nome_tabela, acao, dados_antigos, id_usuario)
@@ -45,7 +42,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers de Auditoria
 CREATE TRIGGER trg_auditar_ordens_servico
 AFTER INSERT OR UPDATE OR DELETE ON ordens_servico
 FOR EACH ROW EXECUTE FUNCTION fn_registrar_auditoria();
@@ -62,7 +58,6 @@ FOR EACH ROW EXECUTE FUNCTION fn_registrar_auditoria();
 -- MÓDULO 3: OPERACIONAL
 ------------------------------------------------------------
 
--- Função para atualizar o valor_total da OS (agora com desconto e checagem de aprovação)
 CREATE OR REPLACE FUNCTION fn_atualizar_total_os()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -85,7 +80,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger para recálculo automático de OS
 DROP TRIGGER IF EXISTS trg_atualiza_total_os ON os_itens;
 CREATE TRIGGER trg_atualiza_total_os
 AFTER INSERT OR UPDATE OR DELETE ON os_itens
@@ -95,7 +89,8 @@ FOR EACH ROW EXECUTE FUNCTION fn_atualizar_total_os();
 -- MÓDULO 4: ESTOQUE (SUPRIMENTOS)
 ------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION fn_item_tem_estoque()
+-- Função para os_itens (verifica aprovado)
+CREATE OR REPLACE FUNCTION fn_item_tem_estoque_os()
 RETURNS TRIGGER AS $$
 DECLARE
     v_saldo_atual INT;
@@ -114,20 +109,36 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger de barreira de segurança para estoque (OS)
+-- Função para vendas_itens (sem verificação de aprovado)
+CREATE OR REPLACE FUNCTION fn_item_tem_estoque_venda()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_saldo_atual INT;
+BEGIN
+    IF NEW.id_produto IS NOT NULL THEN
+        SELECT saldo_atual INTO v_saldo_atual 
+        FROM produtos_pecas 
+        WHERE id_produto = NEW.id_produto;
+
+        IF v_saldo_atual < NEW.quantidade THEN
+            RAISE EXCEPTION 'Saldo insuficiente em estoque para o produto ID % (Disponível: %, Solicitado: %)', 
+                NEW.id_produto, v_saldo_atual, NEW.quantidade;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_valida_estoque_os ON os_itens;
 CREATE TRIGGER trg_valida_estoque_os
 BEFORE INSERT OR UPDATE ON os_itens
-FOR EACH ROW EXECUTE FUNCTION fn_item_tem_estoque();
+FOR EACH ROW EXECUTE FUNCTION fn_item_tem_estoque_os();
 
--- Trigger de barreira de segurança para estoque (Vendas)
 DROP TRIGGER IF EXISTS trg_valida_estoque_vendas ON vendas_itens;
 CREATE TRIGGER trg_valida_estoque_vendas
 BEFORE INSERT OR UPDATE ON vendas_itens
-FOR EACH ROW EXECUTE FUNCTION fn_item_tem_estoque();
+FOR EACH ROW EXECUTE FUNCTION fn_item_tem_estoque_venda();
 
-
--- Função para atualizar saldo_atual na tabela produtos_pecas
 CREATE OR REPLACE FUNCTION fn_atualizar_saldo_estoque()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -144,7 +155,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger para atualizar saldo físico
 DROP TRIGGER IF EXISTS trg_atualiza_estoque ON movimentacoes_estoque;
 CREATE TRIGGER trg_atualiza_estoque
 AFTER INSERT ON movimentacoes_estoque
@@ -154,7 +164,6 @@ FOR EACH ROW EXECUTE FUNCTION fn_atualizar_saldo_estoque();
 -- MÓDULO 5: COMERCIAL E FINANCEIRO
 ------------------------------------------------------------
 
--- Função matemática para cálculo de saldo devedor
 CREATE OR REPLACE FUNCTION fn_saldo_devedor_os(p_id_os INT)
 RETURNS DECIMAL(10,2) AS $$
 DECLARE

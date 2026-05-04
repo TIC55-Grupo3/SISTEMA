@@ -54,45 +54,39 @@ VALUES
     (2, 'Impressora', 'Epson', 'L3150', 'EPS-9988', 'Sem cabo de energia');
 
 -- 8. ORDENS DE SERVIÇO (Cabeçalho)
--- Inserindo uma OS para o notebook do Carlos
 INSERT INTO ordens_servico (id_equipamento, problema_relatado, estado_carcaca, laudo_tecnico, status_os, data_validade_orcamento) 
 VALUES 
     (1, 'Computador muito lento para iniciar e travando.', 'Arranhões leves na base', 'Foi identificado lentidão devido a HD mecânico antigo. Recomendada troca por SSD e formatação.', 'Em Andamento', CURRENT_DATE + INTERVAL '5 days');
 
--- 9. ITENS DA ORDEM DE SERVIÇO (Dispara a Trigger que atualiza o total da OS e valida estoque)
--- Incluindo 1 SSD (R$ 280,00) e 1 Formatação (R$ 150,00) na OS 1
+-- 9. ITENS DA ORDEM DE SERVIÇO
 INSERT INTO os_itens (id_os, id_produto, id_servico, quantidade, valor_unitario, subtotal) 
 VALUES 
-    (1, 1, NULL, 1, 280.00, 280.00), -- Venda do Produto ID 1 (SSD)
-    (1, NULL, 1, 1, 150.00, 150.00); -- Execução do Serviço ID 1 (Formatação)
+    (1, 1, NULL, 1, 280.00, 280.00),
+    (1, NULL, 1, 1, 150.00, 150.00);
 
--- 10. MOVIMENTAÇÕES DE ESTOQUE (Baixa da Peça usada na OS acima)
+-- 10. MOVIMENTAÇÕES DE ESTOQUE
 INSERT INTO movimentacoes_estoque (id_produto, tipo_movimentacao, quantidade, motivo, id_usuario) 
 VALUES 
     (1, 'Saída', 1, 'Uso na OS #1', 2);
 
--- 11. TRANSAÇÕES FINANCEIRAS (Entrada de Adiantamento/Sinal da OS)
--- Registrando um PIX de R$ 100,00 como sinal do cliente Carlos para aprovar o serviço
+-- 11. TRANSAÇÕES FINANCEIRAS
 INSERT INTO transacoes_financeiras (tipo, origem, valor, forma_pagamento, id_os) 
 VALUES 
     ('Entrada', 'Sinal/Adiantamento OS #1', 100.00, 'PIX', 1);
 
 -- 12. VENDAS RÁPIDAS (Balcão)
--- Venda de 1 Teclado USB para a Ana Souza
-INSERT INTO vendas (id_cliente, valor_total, forma_pagamento, status) 
+INSERT INTO vendas (id_cliente, valor_subtotal, valor_desconto, valor_total_liquido, status) 
 VALUES 
-    (2, 55.00, 'Cartão de Débito', 'Concluída');
+    (2, 55.00, 0.00, 55.00, 'Concluída');
 
 INSERT INTO vendas_itens (id_venda, id_produto, id_servico, quantidade, valor_unitario, subtotal) 
 VALUES 
     (1, 4, NULL, 1, 55.00, 55.00);
 
--- Baixa de estoque da venda de balcão
 INSERT INTO movimentacoes_estoque (id_produto, tipo_movimentacao, quantidade, motivo, id_usuario) 
 VALUES 
     (4, 'Saída', 1, 'Venda Balcão #1', 1);
 
--- Pagamento da venda de balcão
 INSERT INTO transacoes_financeiras (tipo, origem, valor, forma_pagamento, id_venda) 
 VALUES 
     ('Entrada', 'Venda Balcão #1', 55.00, 'Cartão de Débito', 1);
