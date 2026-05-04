@@ -79,4 +79,26 @@ export default function Login() {
           >
             {carregando ? <Spinner /> : 'Entrar'}
           </button>
-          <button style={s.botaoSecundario} onClick=
+          <button style={s.botaoSecundario} onClick={() => navigate('/recuperar-senha')}>
+            Recuperar senha
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const s = {
+  fundo: { minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
+  card: { backgroundColor: '#ffffff', borderRadius: '10px', padding: '40px', width: '100%', maxWidth: '420px', boxShadow: '0 2px 16px rgba(0,0,0,0.07)', display: 'flex', flexDirection: 'column' },
+  logo: { fontSize: '20px', fontWeight: 800, color: '#0f172a', textAlign: 'center', marginBottom: '8px' },
+  titulo: { fontSize: '24px', fontWeight: 700, color: '#1e293b', textAlign: 'center', marginBottom: '28px' },
+  label: { fontSize: '14px', fontWeight: 500, color: '#1e293b', marginBottom: '6px' },
+  input: { width: '100%', padding: '12px 16px', fontSize: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#1e293b', marginBottom: '16px', outline: 'none' },
+  senhaWrapper: { position: 'relative', width: '100%' },
+  olhinho: { position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' },
+  erro: { color: '#dc2626', fontSize: '14px', marginBottom: '12px', backgroundColor: '#fee2e2', padding: '8px 12px', borderRadius: '8px' },
+  botoesWrapper: { display: 'flex', gap: '12px', marginTop: '8px' },
+  botaoPrimario: { flex: 1, padding: '12px', backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 600, fontSize: '16px', border: 'none', borderRadius: '10px', cursor: 'pointer' },
+  botaoSecundario: { flex: 1, padding: '12px', backgroundColor: 'transparent', color: '#1e293b', fontWeight: 500, fontSize: '16px', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer' },
+}
